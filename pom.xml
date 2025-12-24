@@ -56,13 +56,13 @@
 							<phase>compile</phase>
 						</execution>
 					</executions>
-					<dependencies>
-						<dependency>
-							<groupId>com.puppycrawl.tools</groupId>
-							<artifactId>checkstyle</artifactId>
-							<version>10.3</version>
-						</dependency>
-					</dependencies>
+<!--					<dependencies>-->
+<!--						<dependency>-->
+<!--							<groupId>com.puppycrawl.tools</groupId>-->
+<!--							<artifactId>checkstyle</artifactId>-->
+<!--							<version>10.12.4</version>-->
+<!--						</dependency>-->
+<!--					</dependencies>-->
 				</plugin>
                 <!-- SpotBugs Maven Plugin -->
 				<plugin>
