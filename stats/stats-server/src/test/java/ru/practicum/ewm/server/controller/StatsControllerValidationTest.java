@@ -7,7 +7,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.ewm.server.StatsServerApplication;
 import ru.practicum.ewm.server.model.EndpointHit;
 import ru.practicum.ewm.server.service.StatsService;
 import ru.practicum.ewm.stats.dto.ViewStatsDto;
@@ -22,7 +24,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(classes = StatsServerApplication.class)
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 class StatsControllerValidationTest {
 
