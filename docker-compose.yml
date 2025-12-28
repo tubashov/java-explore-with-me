@@ -3,10 +3,15 @@ version: '3.9'
 services:
 
   stats-server:
-    image: alpine
-    command: [ "sh", "-c", "while true; do sleep 1000; done" ]
+    image: stats-server:latest
     ports:
       - "9090:9090"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
+      SPRING_DATASOURCE_USERNAME: stats
+      SPRING_DATASOURCE_PASSWORD: stats
+    depends_on:
+      - stats-db
 
   stats-db:
     image: postgres:16.1
