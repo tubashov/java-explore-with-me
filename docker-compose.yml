@@ -3,6 +3,8 @@ version: '3.9'
 services:
 
   stats-server:
+    image: alpine
+    command: [ "sh", "-c", "while true; do sleep 1000; done" ]
     ports:
       - "9090:9090"
 
