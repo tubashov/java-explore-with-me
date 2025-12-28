@@ -20,8 +20,12 @@ services:
 #       - ./db-data:/var/lib/postgresql/data
 
   ewm-service:
+    image: alpine
+    command: [ "sh", "-c", "while true; do sleep 1000; done" ]
     ports:
       - "8080:8080"
 
   ewm-db:
-    image: postgres:16.1
+    image: alpine
+    command: [ "sh", "-c", "while true; do sleep 1000; done" ]
+#    image: postgres:16.1
