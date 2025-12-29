@@ -1,5 +1,82 @@
+##services:
+#  stats-db:
+#    image: postgres:16.1
+#    container_name: stats-db
+#    environment:
+#      POSTGRES_USER: stats
+#      POSTGRES_PASSWORD: password
+#      POSTGRES_DB: stats
+#    ports:
+#      - "5433:5432"   # внешний порт : внутренний порт контейнера
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U stats"]
+#      interval: 5s
+#      retries: 5
+#
+#  stats-server:
+#    build:
+#      context: ./stats/stats-server
+#      dockerfile: Dockerfile
+#    container_name: stats-server
+#    environment:
+#      DB_HOST: stats-db
+#      DB_PORT: 5432
+#      DB_USER: stats
+#      DB_PASSWORD: password
+#      DB_NAME: stats
+#    depends_on:
+#      stats-db:
+#        condition: service_healthy
+#    ports:
+#      - "9090:9090"
+#
+#  ewm-service:
+#    build:
+#      context: ./ewm-service
+#      dockerfile: Dockerfile
+#    container_name: ewm-service
+#    environment:
+#      DB_HOST: stats-db
+#      DB_PORT: 5432
+#      DB_USER: stats
+#      DB_PASSWORD: password
+#      DB_NAME: stats
+#    depends_on:
+#      stats-db:
+#        condition: service_healthy
+#    ports:
+#      - "8080:8080"
 
 services:
+  ewm-db:
+    image: postgres:16.1
+    container_name: ewm-db
+    environment:
+      POSTGRES_USER: ewm
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ewm
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ewm"]
+      interval: 5s
+      retries: 5
+
+  ewm-service:
+    build: ./ewm-service
+    container_name: ewm-service
+    environment:
+      DB_HOST: ewm-db
+      DB_PORT: 5432
+      DB_USER: ewm
+      DB_PASSWORD: password
+      DB_NAME: ewm
+    depends_on:
+      ewm-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
   stats-db:
     image: postgres:16.1
     container_name: stats-db
@@ -8,16 +85,14 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: stats
     ports:
-      - "5433:5432"   # внешний порт : внутренний порт контейнера
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U stats"]
       interval: 5s
       retries: 5
 
   stats-server:
-    build:
-      context: ./stats/stats-server
-      dockerfile: Dockerfile
+    build: ./stats/stats-server
     container_name: stats-server
     environment:
       DB_HOST: stats-db
@@ -30,20 +105,3 @@ services:
         condition: service_healthy
     ports:
       - "9090:9090"
-
-  ewm-service:
-    build:
-      context: ./ewm-service
-      dockerfile: Dockerfile
-    container_name: ewm-service
-    environment:
-      DB_HOST: stats-db
-      DB_PORT: 5432
-      DB_USER: stats
-      DB_PASSWORD: password
-      DB_NAME: stats
-    depends_on:
-      stats-db:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
