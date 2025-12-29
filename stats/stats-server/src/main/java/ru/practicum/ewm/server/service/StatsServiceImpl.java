@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.server.mapper.EndpointHitMapper;
+import ru.practicum.ewm.stats.dto.EndpointHitDto;
 import ru.practicum.ewm.stats.dto.ViewStatsDto;
 import ru.practicum.ewm.server.model.EndpointHit;
 import ru.practicum.ewm.server.repository.EndpointHitRepository;
@@ -18,12 +20,17 @@ import java.util.List;
 public class StatsServiceImpl implements StatsService {
 
     private final EndpointHitRepository repository;
+    private EndpointHitMapper endpointHitMapper;
 
     @Override
-    public EndpointHit save(EndpointHit hit) {
-        log.info("Saving endpoint hit: {}", hit);
-        return repository.save(hit);
+    public EndpointHitDto save(EndpointHitDto dto) {
+
+        EndpointHit entity = EndpointHitMapper.toEntity(dto);
+        EndpointHit saved = repository.save(entity);
+        return EndpointHitMapper.toDto(saved);
     }
+
+
 
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, Boolean unique) {
         if (start == null || end == null) {

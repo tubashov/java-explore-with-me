@@ -1,23 +1,29 @@
-version: '3.9'
+version: "3.9"
 
 services:
   stats-db:
     image: postgres:16.1
+    container_name: stats-db
     environment:
-      POSTGRES_DB: stats
       POSTGRES_USER: stats
-      POSTGRES_PASSWORD: stats
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: stats
     ports:
-      - "5432:5432"
+      - "5433:5432"   # внешний порт : внутренний порт контейнера
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stats"]
+      interval: 5s
+      retries: 5
 
   stats-server:
-    build: ./stats/stats-server
-    ports:
-      - "9090:9090"
-    depends_on:
-      - stats-db
+    build: ./stats
+    container_name: stats-server
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
-      SPRING_DATASOURCE_USERNAME: stats
-      SPRING_DATASOURCE_PASSWORD: stats
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      DB_HOST: stats-db
+      DB_PORT: 5432
+      DB_USER: stats
+      DB_PASSWORD: password
+      DB_NAME: stats
+    depends_on:
+      stats-db:
+        condition: service_healthy
