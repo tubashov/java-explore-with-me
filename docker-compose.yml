@@ -29,14 +29,17 @@ services:
     ports:
       - "9090:9090"
 
-  main-server:
-    build: ./main
-    container_name: main-server
+  ewm-service:
+    build: ./ewm-service
+    container_name: ewm-service
     environment:
-      STATS_HOST: stats-server  # если main обращается к stats
-      STATS_PORT: 9090
+      DB_HOST: stats-db
+      DB_PORT: 5432
+      DB_USER: stats
+      DB_PASSWORD: password
+      DB_NAME: stats
     depends_on:
-      stats-server:
+      stats-db:
         condition: service_healthy
     ports:
       - "8080:8080"
