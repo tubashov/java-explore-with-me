@@ -26,3 +26,17 @@ services:
     depends_on:
       stats-db:
         condition: service_healthy
+    ports:
+      - "9090:9090"
+
+  main-server:
+    build: ./main
+    container_name: main-server
+    environment:
+      STATS_HOST: stats-server  # если main обращается к stats
+      STATS_PORT: 9090
+    depends_on:
+      stats-server:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
