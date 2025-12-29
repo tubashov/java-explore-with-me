@@ -15,7 +15,9 @@ services:
       retries: 5
 
   stats-server:
-    build: ./stats
+    build:
+      context: ./stats/stats-server
+      dockerfile: Dockerfile
     container_name: stats-server
     environment:
       DB_HOST: stats-db
@@ -30,7 +32,9 @@ services:
       - "9090:9090"
 
   ewm-service:
-    build: ./ewm-service
+    build:
+      context: ./ewm-service
+      dockerfile: Dockerfile
     container_name: ewm-service
     environment:
       DB_HOST: stats-db
