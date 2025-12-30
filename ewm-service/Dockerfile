@@ -1,18 +1,25 @@
-# Используем образ с JDK 17
-FROM eclipse-temurin:17-jdk-alpine
+# Этап сборки: Maven + JDK
+FROM maven:3.9.1-eclipse-temurin-17 AS build
 
-# Создаем рабочую директорию
 WORKDIR /app
 
-# Копируем pom.xml и код
+# Копируем pom.xml и исходники
 COPY pom.xml .
 COPY src ./src
 
-# Сборка jar
-RUN ./mvnw clean package -DskipTests
+# Сборка jar (skip тесты)
+RUN mvn clean package -DskipTests
 
-# Указываем порт
+# Финальный образ: только JDK
+FROM eclipse-temurin:17-jdk-alpine
+
+WORKDIR /app
+
+# Копируем jar из сборочного этапа
+COPY --from=build /app/target/ewm-service-0.0.1-SNAPSHOT.jar ewm-service.jar
+
+# Открываем порт
 EXPOSE 8080
 
 # Команда запуска
-CMD ["java", "-jar", "target/ewm-service-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "ewm-service.jar"]
