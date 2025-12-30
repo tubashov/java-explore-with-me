@@ -33,14 +33,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult()
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult()
                 .getFieldErrors()
-                .stream()
-                .collect(Collectors.toMap(
-                        FieldError::getField,
-                        FieldError::getDefaultMessage,
-                        (existing, replacement) -> existing
-                ));
+                .forEach(err -> {
+
+                    String field = err.getField();
+
+                    // ➜ если это наш кейс — подменяем ключ
+                    if (field.equals("endAfterStart")) {
+                        errors.put("end", err.getDefaultMessage());
+                    } else {
+                        errors.put(field, err.getDefaultMessage());
+                    }
+                });
+
         return build(HttpStatus.BAD_REQUEST, errors);
     }
 

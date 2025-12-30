@@ -33,9 +33,9 @@ class StatsControllerTest {
                         .param("start", "2025-02-01T00:00:00")
                         .param("end", "2025-01-01T00:00:00"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.end").value("End date must be after start date"));
-
+                .andExpect(jsonPath("$.errors.end").value("End date must be after start date"));
     }
+
 
     @Test
     void testGetStats_Valid() throws Exception {

@@ -33,6 +33,5 @@ public class EndpointHitDto {
 
     @NotNull(message = "Timestamp cannot be null")
     @PastOrPresent(message = "Timestamp must be in the past or present")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]")
     private LocalDateTime timestamp;
 }
