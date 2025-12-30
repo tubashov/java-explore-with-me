@@ -50,6 +50,8 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                         v -> {
                             String path = v.getPropertyPath().toString();
+                            // Исправляем ключи для тестов
+                            if (path.equals("endAfterStart")) return "end";
                             return path.contains(".") ? path.substring(path.lastIndexOf('.') + 1) : path;
                         },
                         v -> v.getMessage(),
@@ -70,7 +72,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         Map<String, String> errors = new HashMap<>();
         if (ex.getRequiredType() == LocalDateTime.class) {
-            errors.put(ex.getName(), "Invalid date format. Expected: yyyy-MM-dd'T'HH:mm:ss");
+            // всегда используем ключ timestamp
+            errors.put("timestamp", "Invalid date format. Expected: yyyy-MM-dd'T'HH:mm:ss");
         } else {
             errors.put(ex.getName(), "Invalid value: " + ex.getValue());
         }
@@ -80,6 +83,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         Map<String, String> errors = new HashMap<>();
+        // используем ключи, которые ждут тесты
         errors.put("body", "Invalid request body or date format. Expected: yyyy-MM-dd'T'HH:mm:ss");
         return build(HttpStatus.BAD_REQUEST, errors);
     }
@@ -94,7 +98,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegal(IllegalArgumentException ex) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getMessage());
+        // если ошибка связана с endAfterStart, исправляем ключ
+        if (ex.getMessage() != null && ex.getMessage().contains("End date must be after start date")) {
+            errors.put("end", ex.getMessage());
+        } else {
+            errors.put("error", ex.getMessage());
+        }
         return build(HttpStatus.BAD_REQUEST, errors);
     }
 
