@@ -36,7 +36,7 @@ class StatsControllerValidationTest {
     private ObjectMapper mapper;
 
     @MockBean
-    private StatsService service; // мокируем сервис, чтобы не зависеть от БД
+    private StatsService service;
 
     private String json(Object body) throws Exception {
         return mapper.writeValueAsString(body);
@@ -61,7 +61,7 @@ class StatsControllerValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(hit)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.app").value("App cannot be blank"));
+                .andExpect(jsonPath("$.errors.app").value("App cannot be blank"));
     }
 
     @Test
@@ -72,7 +72,7 @@ class StatsControllerValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(hit)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.uri").value("URI cannot be blank"));
+                .andExpect(jsonPath("$.errors.uri").value("URI cannot be blank"));
     }
 
     @Test
@@ -83,7 +83,7 @@ class StatsControllerValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(hit)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.ip").value("Invalid IP address"));
+                .andExpect(jsonPath("$.errors.ip").value("Invalid IP address"));
     }
 
     @Test
@@ -94,42 +94,42 @@ class StatsControllerValidationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json(hit)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.timestamp").value("Timestamp must be in the past or present"));
+                .andExpect(jsonPath("$.errors.timestamp").value("Timestamp must be in the past or present"));
     }
 
     // ------------------------ /stats ------------------------
     @Test
-    void getStats_whenEndBeforeStart_shouldReturnMessage() throws Exception {
+    void getStats_whenEndBeforeStart_shouldReturnValidationError() throws Exception {
         mockMvc.perform(get("/stats")
                         .param("start", "2025-02-01T00:00:00")
                         .param("end", "2025-01-01T00:00:00"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.end").value("End date must be after start date"));
+                .andExpect(jsonPath("$.errors.end").value("End date must be after start date"));
     }
 
     @Test
-    void getStats_whenInvalidDateFormat_shouldReturnMessage() throws Exception {
+    void getStats_whenInvalidDateFormat_shouldReturnValidationError() throws Exception {
         mockMvc.perform(get("/stats")
                         .param("start", "2025-01-01 00:00:00")
                         .param("end", "2025-02-01 00:00:00"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid date format. Expected: yyyy-MM-dd'T'HH:mm:ss"));
+                .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }
 
     @Test
-    void getStats_whenStartNull_shouldReturnMessage() throws Exception {
+    void getStats_whenStartNull_shouldReturnValidationError() throws Exception {
         mockMvc.perform(get("/stats")
                         .param("end", "2025-02-01T00:00:00"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.start").value("Start date is required"));
+                .andExpect(jsonPath("$.errors.start").value("Start date is required"));
     }
 
     @Test
-    void getStats_whenEndNull_shouldReturnMessage() throws Exception {
+    void getStats_whenEndNull_shouldReturnValidationError() throws Exception {
         mockMvc.perform(get("/stats")
                         .param("start", "2025-01-01T00:00:00"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.end").value("End date is required"));
+                .andExpect(jsonPath("$.errors.end").value("End date is required"));
     }
 
     // ------------------------ Положительные сценарии ------------------------

@@ -20,17 +20,19 @@ import java.util.List;
 public class StatsServiceImpl implements StatsService {
 
     private final EndpointHitRepository repository;
-    private EndpointHitMapper endpointHitMapper;
+    private final EndpointHitMapper mapper;
 
     @Override
     public EndpointHitDto save(EndpointHitDto dto) {
-
-        EndpointHit entity = EndpointHitMapper.toEntity(dto);
-        EndpointHit saved = repository.save(entity);
-        return EndpointHitMapper.toDto(saved);
+        try {
+            EndpointHit entity = mapper.toEntity(dto);
+            EndpointHit saved = repository.save(entity);
+            return mapper.toDto(saved);
+        } catch (Exception e) {
+            log.error("Error saving EndpointHit", e);
+            throw e;
+        }
     }
-
-
 
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, Boolean unique) {
         if (start == null || end == null) {

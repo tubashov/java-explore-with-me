@@ -1,11 +1,13 @@
 package ru.practicum.ewm.server.mapper;
 
+import org.springframework.stereotype.Component;
 import ru.practicum.ewm.server.model.EndpointHit;
 import ru.practicum.ewm.stats.dto.EndpointHitDto;
 
+@Component
 public class EndpointHitMapper {
 
-    public static EndpointHit toEntity(EndpointHitDto dto) {
+    public EndpointHit toEntity(EndpointHitDto dto) {
         if (dto == null) return null;
 
         return EndpointHit.builder()
@@ -17,7 +19,7 @@ public class EndpointHitMapper {
                 .build();
     }
 
-    public static EndpointHitDto toDto(EndpointHit entity) {
+    public EndpointHitDto toDto(EndpointHit entity) {
         if (entity == null) return null;
 
         return EndpointHitDto.builder()
