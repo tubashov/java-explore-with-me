@@ -34,4 +34,5 @@ public class StatsController {
         log.info("Request stats from {} to {}, unique={}", request.getStart(), request.getEnd(), request.getUnique());
         return service.getStats(request.getStart(), request.getEnd(), request.getUnique());
     }
+
 }

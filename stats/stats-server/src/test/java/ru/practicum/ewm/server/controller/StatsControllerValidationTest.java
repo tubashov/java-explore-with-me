@@ -101,8 +101,8 @@ class StatsControllerValidationTest {
     @Test
     void getStats_whenEndBeforeStart_shouldReturnValidationError() throws Exception {
         mockMvc.perform(get("/stats")
-                        .param("start", "2025-02-01T00:00:00")
-                        .param("end", "2025-01-01T00:00:00"))
+                        .param("start", "2025-02-01 00:00:00")
+                        .param("end", "2025-01-01 00:00:00"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.end").value("End date must be after start date"));
     }
@@ -110,8 +110,8 @@ class StatsControllerValidationTest {
     @Test
     void getStats_whenInvalidDateFormat_shouldReturnValidationError() throws Exception {
         mockMvc.perform(get("/stats")
-                        .param("start", "2025-01-01 00:00:00")
-                        .param("end", "2025-02-01 00:00:00"))
+                        .param("start", "2025/01/01 00:00")
+                        .param("end", "2025/02/01 00:00"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }

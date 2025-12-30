@@ -9,10 +9,12 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -104,15 +106,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegal(IllegalArgumentException ex) {
-        Map<String, String> errors = new HashMap<>();
-        // если ошибка связана с endAfterStart, исправляем ключ
-        if (ex.getMessage() != null && ex.getMessage().contains("End date must be after start date")) {
-            errors.put("end", ex.getMessage());
-        } else {
-            errors.put("error", ex.getMessage());
-        }
-        return build(HttpStatus.BAD_REQUEST, errors);
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleIllegalArgument(IllegalArgumentException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("errors", Map.of("end", ex.getMessage()));
+        error.put("status", 400);
+        error.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        return error;
     }
 
     @ExceptionHandler(Exception.class)
