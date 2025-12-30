@@ -50,7 +50,6 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                         v -> {
                             String path = v.getPropertyPath().toString();
-                            // Возьмём только последнее имя поля
                             return path.contains(".") ? path.substring(path.lastIndexOf('.') + 1) : path;
                         },
                         v -> v.getMessage(),
