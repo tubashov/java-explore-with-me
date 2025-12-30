@@ -36,14 +36,13 @@ class StatsControllerValidationTest {
     private ObjectMapper mapper;
 
     @MockBean
-    private StatsService service; // мокируем сервис
+    private StatsService service; // мокируем сервис, чтобы не зависеть от БД
 
     private String json(Object body) throws Exception {
         return mapper.writeValueAsString(body);
     }
 
     // ------------------------ /hit ------------------------
-
     @Test
     void saveHit_whenAppValid_shouldReturn201() throws Exception {
         var hit = new EndpointHit(null, "ewm-service", "/events", "127.0.0.1", LocalDateTime.now());
@@ -99,7 +98,6 @@ class StatsControllerValidationTest {
     }
 
     // ------------------------ /stats ------------------------
-
     @Test
     void getStats_whenEndBeforeStart_shouldReturnMessage() throws Exception {
         mockMvc.perform(get("/stats")
@@ -135,7 +133,6 @@ class StatsControllerValidationTest {
     }
 
     // ------------------------ Положительные сценарии ------------------------
-
     @Test
     void getStats_whenValidDatesAndNoUris_shouldReturnOk() throws Exception {
         when(service.getStats(any(), any(), any())).thenReturn(Collections.emptyList());
