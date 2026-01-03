@@ -18,7 +18,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
             )
             FROM EndpointHit h
             WHERE h.timestamp BETWEEN :start AND :end
-              AND (:uris IS NULL OR h.uri IN :uris)
+            AND (:uris IS NULL OR h.uri IN :uris)
             GROUP BY h.uri
             ORDER BY COUNT(h.id) DESC
             """)
@@ -34,7 +34,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
             )
             FROM EndpointHit h
             WHERE h.timestamp BETWEEN :start AND :end
-              AND (:uris IS NULL OR h.uri IN :uris)
+            AND (:uris IS NULL OR h.uri IN :uris)
             GROUP BY h.app, h.uri
             ORDER BY COUNT(DISTINCT h.ip) DESC
             """)
