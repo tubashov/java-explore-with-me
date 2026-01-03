@@ -2,6 +2,7 @@ package ru.practicum.ewm.server.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +19,9 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -135,7 +138,7 @@ class StatsControllerValidationTest {
     // ------------------------ Положительные сценарии ------------------------
     @Test
     void getStats_whenValidDatesAndNoUris_shouldReturnOk() throws Exception {
-        when(service.getStats(any(), any(), any())).thenReturn(Collections.emptyList());
+        when(service.getStats(any(), any(), any(), any())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/stats")
                         .param("start", "2025-01-01T00:00:00")
@@ -147,7 +150,7 @@ class StatsControllerValidationTest {
     @Test
     void getStats_whenValidDatesAndUris_shouldReturnStats() throws Exception {
         var stat = new ViewStatsDto("ewm", "/events", 10L);
-        when(service.getStats(any(), any(), any())).thenReturn(List.of(stat));
+        when(service.getStats(any(), any(), any(), any())).thenReturn(List.of(stat));
 
         mockMvc.perform(get("/stats")
                         .param("start", "2025-01-01T00:00:00")
@@ -157,5 +160,40 @@ class StatsControllerValidationTest {
                 .andExpect(jsonPath("$[0].app").value("ewm"))
                 .andExpect(jsonPath("$[0].uri").value("/events"))
                 .andExpect(jsonPath("$[0].hits").value(10));
+    }
+
+    @Test
+    void getStats_whenUniqueTrue_shouldPassUniqueParamTrueToService() throws Exception {
+        when(service.getStats(any(), any(), any(), any()))
+                .thenReturn(List.of(new ViewStatsDto("ewm", "/events", 1L)));
+
+        mockMvc.perform(get("/stats")
+                        .param("start", "2025-01-01T00:00:00")
+                        .param("end", "2025-01-31T23:59:59")
+                        .param("unique", "true"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Boolean> captor = ArgumentCaptor.forClass(Boolean.class);
+
+        verify(service).getStats(any(), any(), any(), captor.capture());
+
+        assertTrue(captor.getValue());
+    }
+
+    @Test
+    void getStats_whenUniqueNotProvided_shouldPassNullToService() throws Exception {
+        when(service.getStats(any(), any(), any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/stats")
+                        .param("start", "2025-01-01T00:00:00")
+                        .param("end", "2025-01-31T23:59:59"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Boolean> captor = ArgumentCaptor.forClass(Boolean.class);
+
+        verify(service).getStats(any(), any(), any(), captor.capture());
+
+        assertFalse(captor.getValue());
     }
 }

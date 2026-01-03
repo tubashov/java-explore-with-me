@@ -39,7 +39,7 @@ class StatsControllerTest {
 
     @Test
     void testGetStats_Valid() throws Exception {
-        when(service.getStats(any(), any(), any())).thenReturn(Collections.emptyList());
+        when(service.getStats(any(), any(), any(), any())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/stats")
                         .param("start", "2025-01-01T00:00:00")

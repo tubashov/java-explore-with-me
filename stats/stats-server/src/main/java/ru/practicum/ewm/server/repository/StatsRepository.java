@@ -10,19 +10,38 @@ import java.util.List;
 
 public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
 
-    // Метод для общего количества просмотров
-    @Query("select new ru.practicum.ewm.stats.dto.ViewStatsDto(h.app, h.uri, count(h)) " +
-            "from EndpointHit h " +
-            "where h.timestamp between :start and :end " +
-            "group by h.app, h.uri " +
-            "order by count(h) desc")
-    List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end);
+    // Для обычной статистики
+    @Query("""
+       SELECT new ru.practicum.ewm.stats.dto.ViewStatsDto(
+               MIN(h.app),
+               h.uri,
+               COUNT(h.id)
+       )
+       FROM EndpointHit h
+       WHERE h.timestamp BETWEEN :start AND :end
+         AND (:uris IS NULL OR h.uri IN :uris)
+       GROUP BY h.uri
+       ORDER BY COUNT(h.id) DESC
+       """)
+    List<ViewStatsDto> findStats(LocalDateTime start,
+                                 LocalDateTime end,
+                                 List<String> uris);
 
-    // Метод для уникальных просмотров по IP
-    @Query("select new ru.practicum.ewm.stats.dto.ViewStatsDto(h.app, h.uri, count(distinct h.ip)) " +
-            "from EndpointHit h " +
-            "where h.timestamp between :start and :end " +
-            "group by h.app, h.uri " +
-            "order by count(distinct h.ip) desc")
-    List<ViewStatsDto> getUniqueStats(LocalDateTime start, LocalDateTime end);
+    // Для уникальных посещений
+    @Query("""
+       SELECT new ru.practicum.ewm.stats.dto.ViewStatsDto(
+               MIN(h.app),
+               h.uri,
+               COUNT(DISTINCT h.ip)
+       )
+       FROM EndpointHit h
+       WHERE h.timestamp BETWEEN :start AND :end
+         AND (:uris IS NULL OR h.uri IN :uris)
+       GROUP BY h.app, h.uri
+       ORDER BY COUNT(DISTINCT h.ip) DESC
+       """)
+    List<ViewStatsDto> findStatsUnique(LocalDateTime start,
+                                       LocalDateTime end,
+                                       List<String> uris);
+
 }

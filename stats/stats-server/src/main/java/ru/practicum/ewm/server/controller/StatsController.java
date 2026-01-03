@@ -32,7 +32,7 @@ public class StatsController {
     @GetMapping("/stats")
     public List<ViewStatsDto> getStats(@Valid @ModelAttribute StatsRequestDto request) {
         log.info("Request stats from {} to {}, unique={}", request.getStart(), request.getEnd(), request.getUnique());
-        return service.getStats(request.getStart(), request.getEnd(), request.getUnique());
+        return service.getStats(request.getStart(), request.getEnd(), request.getUris(), request.getUnique());
     }
 
 }

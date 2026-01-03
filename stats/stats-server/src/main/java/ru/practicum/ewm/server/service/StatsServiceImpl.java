@@ -5,10 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.server.mapper.EndpointHitMapper;
+import ru.practicum.ewm.server.repository.StatsRepository;
+import ru.practicum.ewm.server.repository.EndpointHitRepository;
 import ru.practicum.ewm.stats.dto.EndpointHitDto;
 import ru.practicum.ewm.stats.dto.ViewStatsDto;
 import ru.practicum.ewm.server.model.EndpointHit;
-import ru.practicum.ewm.server.repository.EndpointHitRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,35 +21,26 @@ import java.util.List;
 public class StatsServiceImpl implements StatsService {
 
     private final EndpointHitRepository repository;
+    private final StatsRepository statsRepository;
     private final EndpointHitMapper mapper;
 
     @Override
     public EndpointHitDto save(EndpointHitDto dto) {
-        try {
-            EndpointHit entity = mapper.toEntity(dto);
-            EndpointHit saved = repository.save(entity);
-            return mapper.toDto(saved);
-        } catch (Exception e) {
-            log.error("Error saving EndpointHit", e);
-            throw e;
-        }
+        EndpointHit entity = mapper.toEntity(dto);
+        EndpointHit saved = repository.save(entity);
+        return mapper.toDto(saved);
     }
 
-    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, Boolean unique) {
-        if (start == null || end == null) {
-            throw new IllegalArgumentException("Start and End must not be null");
-        }
+    @Override
+    public List<ViewStatsDto> getStats(LocalDateTime start,
+                                       LocalDateTime end,
+                                       List<String> uris,
+                                       Boolean unique) {
 
-        if (end.isBefore(start)) {
-            throw new IllegalArgumentException("End date must be after start date");
+        if (unique != null && unique) {
+            return statsRepository.findStatsUnique(start, end, uris);
+        } else {
+            return statsRepository.findStats(start, end, uris);
         }
-
-        if (start.equals(end)) {
-            throw new IllegalArgumentException("Start and end date must not be equal");
-        }
-
-        return unique
-                ? repository.getUniqueStats(start, end)
-                : repository.getStats(start, end);
     }
 }
