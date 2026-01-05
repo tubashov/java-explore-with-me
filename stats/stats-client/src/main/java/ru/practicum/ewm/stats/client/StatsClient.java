@@ -2,6 +2,7 @@ package ru.practicum.ewm.stats.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,7 +20,9 @@ import java.util.List;
 public class StatsClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String serverUrl = "http://localhost:9090";
+
+    @Value("${stats.server.url}")
+    private String serverUrl;
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -37,6 +40,7 @@ public class StatsClient {
                                        LocalDateTime end,
                                        boolean unique,
                                        List<String> uris) {
+
         var uriBuilder = UriComponentsBuilder
                 .fromHttpUrl(serverUrl + "/stats")
                 .queryParam("start", start.format(FORMATTER))
@@ -53,8 +57,11 @@ public class StatsClient {
         try {
             ResponseEntity<ViewStatsDto[]> response =
                     restTemplate.getForEntity(url, ViewStatsDto[].class);
-            log.info("Received stats, count={}", response.getBody().length);
-            return List.of(response.getBody());
+
+            log.info("Received stats, count={}",
+                    response.getBody() != null ? response.getBody().length : 0);
+
+            return response.getBody() != null ? List.of(response.getBody()) : List.of();
         } catch (Exception e) {
             log.error("Failed to fetch stats: {}", e.getMessage());
             return List.of();

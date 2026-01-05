@@ -35,6 +35,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
 
+        log.warn(
+                "Validation failed: {} error(s). Details: {}",
+                ex.getBindingResult().getErrorCount(),
+                ex.getMessage(),
+                ex
+        );
+
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult()
@@ -43,7 +50,7 @@ public class GlobalExceptionHandler {
 
                     String field = err.getField();
 
-                    // ➜ если это наш кейс — подменяем ключ
+                    // Для соответствия тестам — подменяем ключ
                     if (field.equals("endAfterStart")) {
                         errors.put("end", err.getDefaultMessage());
                     } else {
@@ -56,17 +63,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraint(ConstraintViolationException ex) {
+
+        log.warn("Constraint violation detected: {}", ex.getMessage(), ex);
+
         Map<String, String> errors = ex.getConstraintViolations().stream()
                 .collect(Collectors.toMap(
                         v -> {
                             String path = v.getPropertyPath().toString();
-                            // Исправляем ключи для тестов
                             if (path.equals("endAfterStart")) return "end";
                             return path.contains(".") ? path.substring(path.lastIndexOf('.') + 1) : path;
                         },
                         v -> v.getMessage(),
                         (existing, replacement) -> existing
                 ));
+
         return build(HttpStatus.BAD_REQUEST, errors);
     }
 
@@ -80,38 +90,66 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+
+        log.warn(
+                "Type mismatch for parameter '{}': value='{}', expected={}",
+                ex.getName(),
+                ex.getValue(),
+                ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown",
+                ex
+        );
+
         Map<String, String> errors = new HashMap<>();
+
         if (ex.getRequiredType() == LocalDateTime.class) {
-            // всегда используем ключ timestamp
             errors.put("timestamp", "Invalid date format. Expected: yyyy-MM-dd'T'HH:mm:ss");
         } else {
             errors.put(ex.getName(), "Invalid value: " + ex.getValue());
         }
+
         return build(HttpStatus.BAD_REQUEST, errors);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+
+        log.warn("Malformed JSON or incorrect date format: {}", ex.getMessage(), ex);
+
         Map<String, String> errors = new HashMap<>();
-        // используем ключи, которые ждут тесты
         errors.put("body", "Invalid request body or date format. Expected: yyyy-MM-dd'T'HH:mm:ss");
+
         return build(HttpStatus.BAD_REQUEST, errors);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Map<String, Object>> handleMissingParam(MissingServletRequestParameterException ex) {
+
+        log.warn(
+                "Missing request parameter: '{}' (type={})",
+                ex.getParameterName(),
+                ex.getParameterType(),
+                ex
+        );
+
         Map<String, String> errors = new HashMap<>();
         errors.put(ex.getParameterName(), "Parameter is required");
+
         return build(HttpStatus.BAD_REQUEST, errors);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, Object> handleIllegalArgument(IllegalArgumentException ex) {
+
+        log.warn("Illegal argument: {}", ex.getMessage(), ex);
+
         Map<String, Object> error = new HashMap<>();
         error.put("errors", Map.of("end", ex.getMessage()));
         error.put("status", 400);
-        error.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        error.put("timestamp", LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        ));
+
         return error;
     }
 
