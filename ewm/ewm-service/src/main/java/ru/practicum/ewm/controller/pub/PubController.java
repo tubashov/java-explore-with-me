@@ -1,4 +1,4 @@
-package ru.practicum.ewm.pub;
+package ru.practicum.ewm.controller.pub;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

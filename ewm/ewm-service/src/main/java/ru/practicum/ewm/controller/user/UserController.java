@@ -1,13 +1,13 @@
-package ru.practicum.ewm.admin;
+package ru.practicum.ewm.controller.user;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class AdminController {
+public class UserController {
 
-    @GetMapping("/admin/health")
+    @GetMapping("/user/health")
     public String health() {
-        return "Admin API is working";
+        return "User API is working";
     }
 }
