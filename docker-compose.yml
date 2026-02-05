@@ -23,6 +23,40 @@ services:
     networks:
       - stats_network
 
+  stats-server:
+    build:
+      context: ./stats/stats-server
+      dockerfile: Dockerfile
+    container_name: stats-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
+      SPRING_DATASOURCE_USERNAME: stats_user
+      SPRING_DATASOURCE_PASSWORD: stats_password
+    depends_on:
+      stats_db:
+        condition: service_healthy
+    ports:
+      - "9090:9090"
+    networks:
+      - stats_network
+
+  ewm-service:
+    build:
+      context: ./ewm-service
+      dockerfile: Dockerfile
+    container_name: ewm-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
+      SPRING_DATASOURCE_USERNAME: stats_user
+      SPRING_DATASOURCE_PASSWORD: stats_password
+    depends_on:
+      stats_db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - stats_network
+
 networks:
   ewm_network:
   stats_network:
