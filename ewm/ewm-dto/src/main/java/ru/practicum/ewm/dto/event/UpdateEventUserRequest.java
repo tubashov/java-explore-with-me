@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class UpdateEventUserRequest {
+
     private String title;
 
     private String annotation;
