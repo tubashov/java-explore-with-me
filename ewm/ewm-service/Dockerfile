@@ -8,7 +8,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-COPY --from=build /app/stats/stats-server/target/stats-server-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/ewm/ewm-service/target/ewm-service-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 9090
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

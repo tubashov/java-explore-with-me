@@ -1,62 +1,48 @@
+version: '3.8'
+
 services:
-  ewm_db:
+  ewm-db:
     image: postgres:16.1
-    container_name: ewm-db
     environment:
       POSTGRES_USER: ewm_user
       POSTGRES_PASSWORD: ewm_password
       POSTGRES_DB: ewm_db
     ports:
       - "5432:5432"
-    networks:
-      - ewm_network
 
-  stats_db:
+  stats-db:
     image: postgres:16.1
-    container_name: stats-db
     environment:
       POSTGRES_USER: stats_user
       POSTGRES_PASSWORD: stats_password
       POSTGRES_DB: stats_db
     ports:
       - "5433:5432"
-    networks:
-      - stats_network
 
   stats-server:
     build:
-      context: ./stats/stats-server
-      dockerfile: Dockerfile
-    container_name: stats-server
+      context: .
+      dockerfile: /stats/stats-server/Dockerfile
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: stats_user
       SPRING_DATASOURCE_PASSWORD: stats_password
     depends_on:
-      stats_db:
-        condition: service_healthy
+      - stats-db
     ports:
       - "9090:9090"
-    networks:
-      - stats_network
 
   ewm-service:
     build:
-      context: ./ewm-service
-      dockerfile: Dockerfile
-    container_name: ewm-service
+      context: .
+      dockerfile: /ewm/ewm-service/Dockerfile
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
-      SPRING_DATASOURCE_USERNAME: stats_user
-      SPRING_DATASOURCE_PASSWORD: stats_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm_db
+      SPRING_DATASOURCE_USERNAME: ewm_user
+      SPRING_DATASOURCE_PASSWORD: ewm_password
+      STATS_SERVER_URL: http://stats-server:9090
     depends_on:
-      stats_db:
-        condition: service_healthy
+      - ewm-db
+      - stats-server
     ports:
       - "8080:8080"
-    networks:
-      - stats_network
-
-networks:
-  ewm_network:
-  stats_network:
