@@ -22,7 +22,7 @@ services:
   stats-server:
     build:
       context: .
-      dockerfile: /stats/stats-server/Dockerfile
+      dockerfile: stats/stats-server/Dockerfile
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats_db
       SPRING_DATASOURCE_USERNAME: stats_user
@@ -35,7 +35,7 @@ services:
   ewm-service:
     build:
       context: .
-      dockerfile: /ewm/ewm-service/Dockerfile
+      dockerfile: ewm/ewm-service/Dockerfile
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm_db
       SPRING_DATASOURCE_USERNAME: ewm_user
