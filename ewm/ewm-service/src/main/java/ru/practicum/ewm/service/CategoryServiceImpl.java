@@ -4,15 +4,19 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dto.category.CategoryDto;
-import ru.practicum.ewm.dto.category.CategoryUpdateRequest;
+import ru.practicum.ewm.dto.category.UpdateCategoryDto;
 import ru.practicum.ewm.dto.category.NewCategoryDto;
 import ru.practicum.ewm.exception.ConflictException;
 import ru.practicum.ewm.exception.NotFoundException;
+import ru.practicum.ewm.mapper.CategoryMapper;
 import ru.practicum.ewm.model.Category;
 import ru.practicum.ewm.repository.CategoryRepository;
+import ru.practicum.ewm.repository.EventRepository;
 
 import java.util.List;
 
@@ -22,8 +26,10 @@ import java.util.List;
 @Transactional
 public class CategoryServiceImpl implements CategoryService {
 
-    private final CategoryRepository repository;
+    private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
 
+    // 3 Добавление новой категории
     @Override
     public CategoryDto create(NewCategoryDto dto) {
         log.info("Создание категории '{}'", dto.getName());
@@ -33,65 +39,68 @@ public class CategoryServiceImpl implements CategoryService {
                 .build();
 
         try {
-            return toDto(repository.save(category));
+            return CategoryMapper.toDto(categoryRepository.save(category));
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("Category name must be unique");
         }
     }
 
+    // 4 Удаление категории
     @Override
-    public CategoryDto update(Long catId, CategoryUpdateRequest request) {
+    public void delete(Long catId) {
+        if (!categoryRepository.existsById(catId)) {
+            throw new NotFoundException("Category with id=" + catId + " was not found");
+        }
 
-        Category category = repository.findById(catId)
+        if (eventRepository.existsByCategoryId(catId)) {
+            throw new ConflictException("The category is not empty");
+        }
+        categoryRepository.deleteById(catId);
+    }
+
+    // 5 Изменение категории
+    @Override
+    public CategoryDto update(Long catId, UpdateCategoryDto dto) {
+
+        Category category = categoryRepository.findById(catId)
                 .orElseThrow(() ->
                         new NotFoundException("Category with id=" + catId + " was not found"));
 
-        category.setName(request.getName());
+        category.setName(dto.getName());
 
         try {
-            return toDto(repository.save(category));
+            return CategoryMapper.toDto(categoryRepository.save(category));
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("Category name must be unique");
         }
     }
 
-    @Override
-    public void delete(Long id) {
-
-        if (!repository.existsById(id)) {
-            throw new NotFoundException("Category with id=" + id + " was not found");
-        }
-
-        try {
-            repository.deleteById(id);
-            log.info("Категория {} удалена", id);
-        } catch (DataIntegrityViolationException e) {
-            // когда с категорией связаны события
-            throw new ConflictException("The category is not empty");
-        }
-    }
-
+    // 12 Получение категорий
     @Override
     public List<CategoryDto> findAll(int from, int size) {
-        PageRequest page = PageRequest.of(from / size, size);
 
-        return repository.findAll(page)
-                .map(this::toDto)
+        Page<Category> page = categoryRepository.findAll(
+                PageRequest.of(from / size, size, Sort.by("id").ascending())
+        );
+
+        log.debug("Found {} categories", page.getNumberOfElements());
+
+        return page.getContent().stream()
+                .map(CategoryMapper::toDto)
                 .toList();
     }
 
+    // 13 Получение информации о категории по её идентификатору
     @Override
     public CategoryDto findById(Long catId) {
-        return repository.findById(catId)
-                .map(this::toDto)
-                .orElseThrow(() ->
-                        new NotFoundException("Category with id=" + catId + " was not found"));
-    }
+        Category category = categoryRepository.findById(catId)
+                .orElseThrow(() -> {
+                    log.warn("Category with id={} not found", catId);
+                    return new NotFoundException(
+                            String.format("Category with id=%d was not found", catId)
+                    );
+                });
 
-    private CategoryDto toDto(Category category) {
-        return CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
+        return ru.practicum.ewm.mapper.CategoryMapper.toDto(category);
     }
 }

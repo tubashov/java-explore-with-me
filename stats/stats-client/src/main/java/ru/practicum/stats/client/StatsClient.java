@@ -27,6 +27,7 @@ public class StatsClient {
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
+    // Отправка события о посещении на сервер статистики
     public void saveHit(EndpointHitDto hit) {
         log.info("Sending hit to stats server: {}", hit);
         try {
@@ -36,6 +37,7 @@ public class StatsClient {
         }
     }
 
+    // Получение статистики за заданный период для заданных URIs
     public List<ViewStatsDto> getStats(LocalDateTime start,
                                        LocalDateTime end,
                                        boolean unique,
@@ -47,6 +49,7 @@ public class StatsClient {
                 .queryParam("end", end.format(FORMATTER))
                 .queryParam("unique", unique);
 
+        // Добавляем параметры URIs, если они есть
         if (uris != null && !uris.isEmpty()) {
             uris.forEach(u -> uriBuilder.queryParam("uris", u));
         }
@@ -58,13 +61,35 @@ public class StatsClient {
             ResponseEntity<ViewStatsDto[]> response =
                     restTemplate.getForEntity(url, ViewStatsDto[].class);
 
-            log.info("Received stats, count={}",
-                    response.getBody() != null ? response.getBody().length : 0);
-
-            return response.getBody() != null ? List.of(response.getBody()) : List.of();
+            // Проверка, что статистика пришла
+            if (response.getBody() != null) {
+                log.info("Received stats, count={}", response.getBody().length);
+                return List.of(response.getBody());
+            } else {
+                log.warn("No stats received.");
+                return List.of();
+            }
         } catch (Exception e) {
             log.error("Failed to fetch stats: {}", e.getMessage());
-            return List.of();
+            return List.of(); // Возвращаем пустой список в случае ошибки
+        }
+    }
+
+    // Дополнительный метод для обновления статистики при просмотре событий
+    public void updateEventStats(String appName, Long eventId, String ip) {
+        try {
+            // Создание объекта EndpointHitDto с использованием сеттеров
+            EndpointHitDto hit = new EndpointHitDto();
+            hit.setApp(appName);
+            hit.setUri("/events/" + eventId);
+            hit.setTimestamp(LocalDateTime.now());
+            hit.setIp(ip); // предполагаем, что IP передается в метод
+
+            // Отправка статистики для конкретного события
+            saveHit(hit);
+            log.info("Updated stats for event: {}", eventId);
+        } catch (Exception e) {
+            log.error("Error while updating stats for event {}: {}", eventId, e.getMessage());
         }
     }
 }

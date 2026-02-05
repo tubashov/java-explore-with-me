@@ -1,13 +1,16 @@
 package ru.practicum.stats.dto;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
+import ru.practicum.stats.dto.validator.DateRangeValid;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+@DateRangeValid
 @Getter
 @Setter
 @NoArgsConstructor

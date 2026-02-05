@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.category.CategoryDto;
-import ru.practicum.ewm.dto.category.CategoryUpdateRequest;
+import ru.practicum.ewm.dto.category.UpdateCategoryDto;
 import ru.practicum.ewm.dto.category.NewCategoryDto;
 import ru.practicum.ewm.service.CategoryService;
 
@@ -19,23 +19,27 @@ public class AdminCategoryController {
 
     private final CategoryService categoryService;
 
+    // 3 Добавление новой категории
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto create(@RequestBody @Valid NewCategoryDto dto) {
+
         return categoryService.create(dto);
     }
 
-    @PatchMapping("/{catId}")
-    public CategoryDto update(
-            @PathVariable @Positive Long catId,
-            @RequestBody @Valid CategoryUpdateRequest request) {
-
-        return categoryService.update(catId, request);
-    }
-
+    // 4 Удаление категории
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable @Positive Long catId) {
         categoryService.delete(catId);
+    }
+
+    // 5 Изменение категории
+    @PatchMapping("/{catId}")
+    public CategoryDto update(
+            @PathVariable @Positive Long catId,
+            @RequestBody @Valid UpdateCategoryDto dto) {
+
+        return categoryService.update(catId, dto);
     }
 }

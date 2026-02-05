@@ -1,5 +1,6 @@
 package ru.practicum.ewm.dto.category;
 
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -9,8 +10,9 @@ import jakarta.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryUpdateRequest {
+public class UpdateCategoryDto {
 
     @NotBlank
+    @Size(max = 50)
     private String name;
 }
