@@ -14,6 +14,7 @@
     </parent>
 
     <artifactId>ewm-dto</artifactId>
+
     <packaging>jar</packaging>
 
     <name>ewm-dto</name>

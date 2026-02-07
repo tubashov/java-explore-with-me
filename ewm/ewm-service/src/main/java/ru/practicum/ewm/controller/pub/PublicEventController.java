@@ -53,7 +53,7 @@ public class PublicEventController {
         return eventService.findPublic(
                 text, categories, paid,
                 rangeStart, rangeEnd,
-                onlyAvailable, sort, from, size
+                onlyAvailable, sort, from, size, request
         );
 }
 
@@ -72,6 +72,6 @@ public class PublicEventController {
                         .build()
         );
 
-        return eventService.findPublicById(id);
+        return eventService.findPublicById(id, request);
     }
 }

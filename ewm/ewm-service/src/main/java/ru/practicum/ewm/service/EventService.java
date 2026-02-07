@@ -1,5 +1,6 @@
 package ru.practicum.ewm.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.ewm.dto.event.*;
 import ru.practicum.ewm.dto.event.EventState;
 
@@ -40,9 +41,10 @@ public interface EventService {
             Boolean onlyAvailable,
             EventSort sort,
             int from,
-            int size
+            int size,
+            HttpServletRequest request
     );
 
     // 17 Получение подробной информации об опубликованном событии по его идентификатору
-    EventFullDto findPublicById(Long eventId);
+    EventFullDto findPublicById(Long eventId, HttpServletRequest request);
 }
