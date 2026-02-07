@@ -19,13 +19,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatsClient {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${stats.server.url}")
     private String serverUrl;
 
     private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // Отправка события о посещении на сервер статистики
     public void saveHit(EndpointHitDto hit) {
@@ -34,6 +34,7 @@ public class StatsClient {
             restTemplate.postForEntity(serverUrl + "/hit", hit, Void.class);
         } catch (Exception e) {
             log.error("Failed to send hit: {}", e.getMessage());
+            throw new RuntimeException("Stats server is unavailable", e);
         }
     }
 
@@ -43,36 +44,31 @@ public class StatsClient {
                                        boolean unique,
                                        List<String> uris) {
 
-        var uriBuilder = UriComponentsBuilder
+        String startStr = start.format(FORMATTER);
+        String endStr = end.format(FORMATTER);
+
+        UriComponentsBuilder builder = UriComponentsBuilder
                 .fromHttpUrl(serverUrl + "/stats")
-                .queryParam("start", start.format(FORMATTER))
-                .queryParam("end", end.format(FORMATTER))
+                .queryParam("start", startStr)
+                .queryParam("end", endStr)
                 .queryParam("unique", unique);
 
-        // Добавляем параметры URIs, если они есть
         if (uris != null && !uris.isEmpty()) {
-            uris.forEach(u -> uriBuilder.queryParam("uris", u));
+            uris.forEach(u -> builder.queryParam("uris", u));
         }
 
-        String url = uriBuilder.toUriString();
+        // ⚠️ ВАЖНО: НЕ кодируем пробелы
+        String url = builder.build(false).toUriString();
+
         log.info("Requesting stats from server: {}", url);
 
-        try {
-            ResponseEntity<ViewStatsDto[]> response =
-                    restTemplate.getForEntity(url, ViewStatsDto[].class);
+        ResponseEntity<ViewStatsDto[]> response =
+                restTemplate.getForEntity(url, ViewStatsDto[].class);
 
-            // Проверка, что статистика пришла
-            if (response.getBody() != null) {
-                log.info("Received stats, count={}", response.getBody().length);
-                return List.of(response.getBody());
-            } else {
-                log.warn("No stats received.");
-                return List.of();
-            }
-        } catch (Exception e) {
-            log.error("Failed to fetch stats: {}", e.getMessage());
-            return List.of(); // Возвращаем пустой список в случае ошибки
+        if (response.getBody() == null) {
+            return List.of();
         }
+        return List.of(response.getBody());
     }
 
     // Дополнительный метод для обновления статистики при просмотре событий
@@ -90,6 +86,7 @@ public class StatsClient {
             log.info("Updated stats for event: {}", eventId);
         } catch (Exception e) {
             log.error("Error while updating stats for event {}: {}", eventId, e.getMessage());
+            throw new RuntimeException("Stats server is unavailable", e);
         }
     }
 }

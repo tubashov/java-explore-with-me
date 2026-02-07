@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 
+import static ru.practicum.ewm.dto.event.EventState.PUBLISHED;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -148,7 +150,7 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException("User is not the initiator of the event");
         }
 
-        if (event.getState() == EventState.PUBLISHED) {
+        if (event.getState() == PUBLISHED) {
             log.error("Published event with id={} cannot be changed", eventId);
             throw new ConflictException("Published event cannot be changed");
         }
@@ -198,15 +200,15 @@ public class EventServiceImpl implements EventService {
             int size
     ) {
         log.info("""
-    Admin search events:
-    users={}
-    states={}
-    categories={}
-    rangeStart={}
-    rangeEnd={}
-    from={}
-    size={}
-    """,
+                        Admin search events:
+                        users={}
+                        states={}
+                        categories={}
+                        rangeStart={}
+                        rangeEnd={}
+                        from={}
+                        size={}
+                        """,
                 users, states, categories, rangeStart, rangeEnd, from, size
         );
 
@@ -279,14 +281,14 @@ public class EventServiceImpl implements EventService {
                         throw new ConflictException("Event date must be at least 1 hour in the future");
                     }
 
-                    event.setState(EventState.PUBLISHED);
+                    event.setState(PUBLISHED);
                     event.setPublishedOn(LocalDateTime.now());
                     log.info("Event with id={} published", eventId);
                     break;
 
                 case REJECT_EVENT:
                     // нельзя отклонить опубликованное событие
-                    if (event.getState() == EventState.PUBLISHED) {
+                    if (event.getState() == PUBLISHED) {
                         log.error("Published event cannot be rejected for event id={}", eventId);
                         throw new ConflictException("Published event cannot be rejected");
                     }
@@ -344,7 +346,7 @@ public class EventServiceImpl implements EventService {
                     paid,
                     rangeStart,
                     rangeEnd,
-                    EventState.PUBLISHED,
+                    PUBLISHED,
                     pageable
             );
         } else {
@@ -354,7 +356,7 @@ public class EventServiceImpl implements EventService {
                     paid,
                     rangeStart,
                     rangeEnd,
-                    EventState.PUBLISHED,
+                    PUBLISHED,
                     pageable
             );
         }
@@ -424,19 +426,53 @@ public class EventServiceImpl implements EventService {
     }
 
     // 17 Получение подробной информации об опубликованном событии по его идентификатору
+//    @Override
+//    @Transactional(readOnly = true)
+//    public EventFullDto findPublicById(Long eventId, String ip) {
+//
+//        log.info("Find event with id={}", eventId);
+//
+//        Event event = eventRepository
+//                .findByIdAndState(eventId, EventState.PUBLISHED)
+//                .orElseThrow(() -> new NotFoundException(
+//                        "Event with id=" + eventId + " not found"
+//                ));
+//
+//        // Получаем текущие просмотры из StatsClient
+//        Long views = statsClient.getStats(
+//                        event.getPublishedOn(),
+//                        LocalDateTime.now(),
+//                        true,
+//                        List.of("/events/" + eventId)
+//                ).stream()
+//                .findFirst()
+//                .map(ViewStatsDto::getHits)
+//                .orElse(0L);
+//
+//        // Для текущего запроса добавляем +1
+//        if (ip != null) {
+//            views++;
+//        }
+//
+//        EventFullDto dto = EventMapper.toFullDto(event);
+//        dto.setViews(views);
+//
+//        log.info("Event with id={} found successfully with views={}", eventId, views);
+//
+//        return dto;
+//    }
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public EventFullDto findPublicById(Long eventId) {
+        Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
+                .orElseThrow(() -> new NotFoundException("Event not found"));
 
-        log.info("Find event with id={}", eventId);
-        Event event = eventRepository
-                .findByIdAndState(eventId, EventState.PUBLISHED)
-                .orElseThrow(() -> new NotFoundException(
-                        "Event with id=" + eventId + " not found"
-                ));
+        // Берем очень ранний start, чтобы hit точно попал
+        LocalDateTime start = event.getCreatedOn();
+        if (start == null) start = LocalDateTime.of(1970,1,1,0,0);
 
         Long views = statsClient.getStats(
-                        event.getPublishedOn(),
+                        start,
                         LocalDateTime.now(),
                         true,
                         List.of("/events/" + eventId)
@@ -445,14 +481,8 @@ public class EventServiceImpl implements EventService {
                 .map(ViewStatsDto::getHits)
                 .orElse(0L);
 
-        event.setViews(views);
-        eventRepository.save(event);
-
         EventFullDto dto = EventMapper.toFullDto(event);
         dto.setViews(views);
-
-        log.info("Event with id={} founded successfully", eventId);
-
         return dto;
     }
 }

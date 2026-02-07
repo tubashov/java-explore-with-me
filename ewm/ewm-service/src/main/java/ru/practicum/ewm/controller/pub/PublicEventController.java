@@ -59,8 +59,8 @@ public class PublicEventController {
 
     // 17 Получение подробной информации об опубликованном событии по его идентификатору
     @GetMapping("/{id}")
-    public EventFullDto findPublicById(
-            @Positive @PathVariable Long id,
+    public EventFullDto getPublicEvent(
+            @PathVariable Long id,
             HttpServletRequest request
     ) {
         statsClient.saveHit(
