@@ -7,6 +7,10 @@ services:
       POSTGRES_DB: ewm_db
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ewm_user -d ewm_db" ]
+      interval: 10s
+      retries: 5
 
   stats-db:
     image: postgres:16.1
@@ -16,9 +20,8 @@ services:
       POSTGRES_DB: stats_db
     ports:
       - "5433:5432"
-
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user" ]
+      test: [ "CMD-SHELL", "pg_isready -U stats_user -d stats_db" ]
       interval: 5s
       timeout: 5s
       retries: 5
