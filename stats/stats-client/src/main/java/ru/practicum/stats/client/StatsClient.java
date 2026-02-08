@@ -30,10 +30,24 @@ public class StatsClient {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // Отправка события о посещении на сервер статистики
+    // Отправка события о посещении на сервер статистики
     public void saveHit(EndpointHitDto hit) {
         log.info("Sending hit to stats server: {}", hit);
         try {
-            restTemplate.postForEntity(serverUrl + "/hit", hit, Void.class);
+            // Преобразуем timestamp в строку с кодировкой
+            String timestamp = URLEncoder.encode(
+                    hit.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    StandardCharsets.UTF_8
+            );
+
+            EndpointHitDto encodedHit = EndpointHitDto.builder()
+                    .app(hit.getApp())
+                    .uri(hit.getUri())
+                    .ip(hit.getIp())
+                    .timestamp(hit.getTimestamp()) // можно оставить LocalDateTime, если сервер умеет
+                    .build();
+
+            restTemplate.postForEntity(serverUrl + "/hit", encodedHit, Void.class);
         } catch (Exception e) {
             log.error("Failed to send hit: {}", e.getMessage());
             throw new RuntimeException("Stats server is unavailable", e);
@@ -41,34 +55,29 @@ public class StatsClient {
     }
 
     // Получение статистики за заданный период для заданных URIs
+    // В StatsClient
     public List<ViewStatsDto> getStats(LocalDateTime start,
                                        LocalDateTime end,
                                        boolean unique,
                                        List<String> uris) {
 
-        String startStr = URLEncoder.encode(start.format(FORMATTER), StandardCharsets.UTF_8);
-        String endStr = URLEncoder.encode(end.format(FORMATTER), StandardCharsets.UTF_8);
-
         UriComponentsBuilder builder = UriComponentsBuilder
                 .fromHttpUrl(serverUrl + "/stats")
-                .queryParam("start", startStr)
-                .queryParam("end", endStr)
+                .queryParam("start", start.format(FORMATTER))
+                .queryParam("end", end.format(FORMATTER))
                 .queryParam("unique", unique);
 
         if (uris != null && !uris.isEmpty()) {
             uris.forEach(u -> builder.queryParam("uris", u));
         }
 
-        String url = builder.build(false).toUriString(); // теперь даты закодированы
+        String url = builder.build(false).toUriString(); // ⚡ НЕ кодируем даты вручную
         log.info("Requesting stats from server: {}", url);
 
         ResponseEntity<ViewStatsDto[]> response =
                 restTemplate.getForEntity(url, ViewStatsDto[].class);
 
-        if (response.getBody() == null) {
-            return List.of();
-        }
-        return List.of(response.getBody());
+        return response.getBody() != null ? List.of(response.getBody()) : List.of();
     }
 
     // Дополнительный метод для обновления статистики при просмотре событий

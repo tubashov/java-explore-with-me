@@ -408,6 +408,7 @@ public class EventServiceImpl implements EventService {
     }
 
     // 17 Получение подробной информации об опубликованном событии по его идентификатору
+    // В EventServiceImpl
     @Override
     @Transactional(readOnly = true)
     public EventFullDto findPublicById(Long eventId, HttpServletRequest request) {
@@ -416,7 +417,7 @@ public class EventServiceImpl implements EventService {
 
         String ip = getClientIp(request);
 
-        // Сохраняем hit один раз
+        // Отправляем один hit
         statsClient.saveHit(EndpointHitDto.builder()
                 .app(appName)
                 .uri("/events/" + eventId)
@@ -424,10 +425,9 @@ public class EventServiceImpl implements EventService {
                 .ip(ip)
                 .build());
 
-        // Получаем актуальное количество просмотров
+        // Получаем количество просмотров
         Long views = statsClient.getStats(
-                        event.getCreatedOn() != null ? event.getCreatedOn() :
-                                LocalDateTime.of(1970, 1, 1, 0, 0),
+                        event.getCreatedOn() != null ? event.getCreatedOn() : LocalDateTime.of(1970, 1, 1, 0, 0),
                         LocalDateTime.now(),
                         true,
                         List.of("/events/" + eventId)
@@ -437,6 +437,7 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto dto = EventMapper.toFullDto(event);
         dto.setViews(views);
+
         log.info("Returning eventId={} with {} views", eventId, views);
         return dto;
     }
