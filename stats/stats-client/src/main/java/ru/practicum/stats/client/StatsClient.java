@@ -10,6 +10,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStatsDto;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -44,8 +46,8 @@ public class StatsClient {
                                        boolean unique,
                                        List<String> uris) {
 
-        String startStr = start.format(FORMATTER);
-        String endStr = end.format(FORMATTER);
+        String startStr = URLEncoder.encode(start.format(FORMATTER), StandardCharsets.UTF_8);
+        String endStr = URLEncoder.encode(end.format(FORMATTER), StandardCharsets.UTF_8);
 
         UriComponentsBuilder builder = UriComponentsBuilder
                 .fromHttpUrl(serverUrl + "/stats")
@@ -57,9 +59,7 @@ public class StatsClient {
             uris.forEach(u -> builder.queryParam("uris", u));
         }
 
-        // ⚠️ ВАЖНО: НЕ кодируем пробелы
-        String url = builder.build(false).toUriString();
-
+        String url = builder.build(false).toUriString(); // теперь даты закодированы
         log.info("Requesting stats from server: {}", url);
 
         ResponseEntity<ViewStatsDto[]> response =

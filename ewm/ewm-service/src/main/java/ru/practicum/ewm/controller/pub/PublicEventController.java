@@ -59,19 +59,7 @@ public class PublicEventController {
 
     // 17 Получение подробной информации об опубликованном событии по его идентификатору
     @GetMapping("/{id}")
-    public EventFullDto getPublicEvent(
-            @PathVariable Long id,
-            HttpServletRequest request
-    ) {
-        statsClient.saveHit(
-                EndpointHitDto.builder()
-                        .app("ewm-service")
-                        .uri(request.getRequestURI())
-                        .ip(request.getRemoteAddr())
-                        .timestamp(LocalDateTime.now())
-                        .build()
-        );
-
+    public EventFullDto getPublicEvent(@PathVariable Long id, HttpServletRequest request) {
         return eventService.findPublicById(id, request);
     }
 }

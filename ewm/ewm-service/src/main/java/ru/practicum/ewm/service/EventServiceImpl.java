@@ -412,20 +412,19 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public EventFullDto findPublicById(Long eventId, HttpServletRequest request) {
         Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
-                .orElseThrow(() -> {
-                    log.error("Event with id={} not found", eventId);
-                    return new NotFoundException("Event not found");
-                });
+                .orElseThrow(() -> new NotFoundException("Event not found"));
 
         String ip = getClientIp(request);
+
+        // Сохраняем hit один раз
         statsClient.saveHit(EndpointHitDto.builder()
                 .app(appName)
                 .uri("/events/" + eventId)
                 .timestamp(LocalDateTime.now())
                 .ip(ip)
                 .build());
-        log.debug("Saved hit for eventId={}", eventId);
 
+        // Получаем актуальное количество просмотров
         Long views = statsClient.getStats(
                         event.getCreatedOn() != null ? event.getCreatedOn() :
                                 LocalDateTime.of(1970, 1, 1, 0, 0),
