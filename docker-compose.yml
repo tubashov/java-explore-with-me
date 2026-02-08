@@ -14,6 +14,8 @@ services:
     depends_on:
       - ewm-db
       - stats-server
+    volumes:
+      - ~/.m2:/root/.m2
 
   stats-server:
     build:
@@ -27,6 +29,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: stats_password
     depends_on:
       - stats-db
+    volumes:
+      - ~/.m2:/root/.m2
 
   ewm-db:
     image: postgres:16
