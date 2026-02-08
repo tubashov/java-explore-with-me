@@ -26,6 +26,7 @@ public class CompilationService {
     private final EventRepository eventRepository;
 
     // 1 Получение подборок событий
+    @Transactional(readOnly = true)
     public List<CompilationDto> findAll(
             Boolean pinned,
             int from,
@@ -51,6 +52,7 @@ public class CompilationService {
     }
 
     // 2 Получение подборки событий по его id
+    @Transactional(readOnly = true)
     public CompilationDto findById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() ->

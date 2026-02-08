@@ -1,14 +1,17 @@
 package ru.practicum.ewm.mapper;
 
+import lombok.experimental.UtilityClass;
+
 import ru.practicum.ewm.model.User;
 import ru.practicum.ewm.dto.user.UserDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
 import ru.practicum.ewm.dto.user.NewUserRequest;
 
+@UtilityClass
 public class UserMapper {
 
     // 22 Добавление нового пользователя
-    public static User toEntity(NewUserRequest request) {
+    public User toEntity(NewUserRequest request) {
         if (request == null) return null;
 
         return User.builder()
@@ -18,7 +21,7 @@ public class UserMapper {
     }
 
     // Entity -> UserDto
-    public static UserDto toDto(User user) {
+    public UserDto toDto(User user) {
         if (user == null) return null;
 
         return UserDto.builder()
@@ -29,7 +32,7 @@ public class UserMapper {
     }
 
     // Entity -> UserShortDto
-    public static UserShortDto toShortDto(User user) {
+    public UserShortDto toShortDto(User user) {
         if (user == null) return null;
 
         return UserShortDto.builder()

@@ -1,18 +1,20 @@
 package ru.practicum.ewm.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.model.Category;
 
+@UtilityClass
 public class CategoryMapper {
 
-    public static CategoryDto toDto(Category category) {
+    public CategoryDto toDto(Category category) {
         return new CategoryDto(
                 category.getId(),
                 category.getName()
         );
     }
 
-    public static Category toEntity(CategoryDto dto) {
+    public Category toEntity(CategoryDto dto) {
         return Category.builder()
                 .id(dto.getId())
                 .name(dto.getName())

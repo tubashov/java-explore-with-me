@@ -1,5 +1,6 @@
 package ru.practicum.ewm.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.dto.event.CompilationDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.event.EventState;
@@ -8,10 +9,11 @@ import ru.practicum.ewm.model.Event;
 
 import java.util.List;
 
+@UtilityClass
 public class CompilationMapper {
 
     // Compilation -> CompilationDto
-    public static CompilationDto toDto(Compilation compilation) {
+    public CompilationDto toDto(Compilation compilation) {
         if (compilation == null) return null;
 
         List<EventShortDto> eventDtos = compilation.getEvents() != null && !compilation.getEvents().isEmpty()
@@ -30,7 +32,7 @@ public class CompilationMapper {
     }
 
     // DTO -> Entity
-    public static Compilation toEntity(CompilationDto dto, List<Event> events) {
+    public Compilation toEntity(CompilationDto dto, List<Event> events) {
         if (dto == null) return null;
 
         return Compilation.builder()

@@ -1,14 +1,16 @@
 package ru.practicum.ewm.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.dto.Location;
 import ru.practicum.ewm.dto.event.*;
 import ru.practicum.ewm.model.*;
 
 import java.time.LocalDateTime;
 
+@UtilityClass
 public class EventMapper {
 
-    public static EventFullDto toFullDto(Event event) {
+    public EventFullDto toFullDto(Event event) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -29,7 +31,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toShortDto(Event event) {
+    public EventShortDto toShortDto(Event event) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -43,7 +45,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static Event toEntity(NewEventDto dto, User initiator) {
+    public Event toEntity(NewEventDto dto, User initiator) {
         Event e = new Event();
 
         e.setTitle(dto.getTitle());
@@ -61,7 +63,7 @@ public class EventMapper {
         return e;
     }
 
-    public static void updateEvent(Event event, UpdateEventUserRequest dto) {
+    public void updateEvent(Event event, UpdateEventUserRequest dto) {
 
         if (dto.getTitle() != null) event.setTitle(dto.getTitle());
         if (dto.getAnnotation() != null) event.setAnnotation(dto.getAnnotation());
@@ -72,7 +74,7 @@ public class EventMapper {
         if (dto.getLocation() != null) event.setLocation(toLocation(dto.getLocation()));
     }
 
-    private static EventLocation toLocation(Location dto) {
+    private EventLocation toLocation(Location dto) {
         if (dto == null) return null;
 
         EventLocation loc = new EventLocation();
@@ -81,13 +83,13 @@ public class EventMapper {
         return loc;
     }
 
-    private static Location toLocationDto(EventLocation loc) {
+    private Location toLocationDto(EventLocation loc) {
         if (loc == null) return null;
 
         return new Location(loc.getLat(), loc.getLon());
     }
 
-    public static void updateEventByAdmin(Event event, UpdateEventAdminRequest dto) {
+    public void updateEventByAdmin(Event event, UpdateEventAdminRequest dto) {
 
         if (dto.getTitle() != null) event.setTitle(dto.getTitle());
         if (dto.getAnnotation() != null) event.setAnnotation(dto.getAnnotation());

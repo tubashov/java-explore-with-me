@@ -1,6 +1,7 @@
 package ru.practicum.ewm.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.event.*;
@@ -15,6 +16,7 @@ import ru.practicum.ewm.repository.EventRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,15 +28,15 @@ public class AdminCompilationService {
     // 24 Добавление новой подборки (подборка может не содержать событий)
     @Transactional
     public CompilationDto create(NewCompilationDto dto) {
+        log.info("Creating new compilation with title='{}'", dto.getTitle());
+
         // Получаем события по id, если переданы
         List<Event> events = dto.getEvents() != null && !dto.getEvents().isEmpty()
                 ? eventRepository.findAllById(dto.getEvents())
                 : List.of();
 
-        // Устанавливаем pinned = false, если не передан
         Boolean pinned = dto.getPinned() != null ? dto.getPinned() : false;
 
-        // Сохраняем компиляцию
         Compilation compilation = Compilation.builder()
                 .title(dto.getTitle())
                 .pinned(pinned)
@@ -43,12 +45,13 @@ public class AdminCompilationService {
 
         Compilation saved = compilationRepository.save(compilation);
 
-        // Маппинг в DTO с гарантией, что events не null
+        log.info("Compilation created successfully with id={}", saved.getId());
+
         List<EventShortDto> eventDto = saved.getEvents() != null && !saved.getEvents().isEmpty()
                 ? saved.getEvents().stream()
                 .map(EventMapper::toShortDto)
                 .toList()
-                : List.of(); // пустой список, не null
+                : List.of();
 
         return CompilationDto.builder()
                 .id(saved.getId())
@@ -61,8 +64,12 @@ public class AdminCompilationService {
     // 26 Обновить информацию о подборке
     @Transactional
     public CompilationDto update(Long compId, UpdateCompilationDto dto) {
+        log.info("Updating compilation with id={}", compId);
+
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
+                .orElseThrow(() -> new NotFoundException(
+                        "Compilation with id=" + compId + " was not found"
+                ));
 
         if (dto.getTitle() != null) {
             compilation.setTitle(dto.getTitle());
@@ -77,15 +84,24 @@ public class AdminCompilationService {
         }
 
         Compilation updated = compilationRepository.save(compilation);
+
+        log.info("Compilation with id={} updated successfully", updated.getId());
+
         return CompilationMapper.toDto(updated);
     }
 
     // 25 Удаление подборки
     @Transactional
     public void delete(Long compId) {
+        log.info("Deleting compilation with id={}", compId);
+
         if (!compilationRepository.existsById(compId)) {
+            log.warn("Compilation with id={} not found", compId);
             throw new NotFoundException("Compilation with id=" + compId + " was not found");
         }
+
         compilationRepository.deleteById(compId);
+
+        log.info("Compilation with id={} deleted successfully", compId);
     }
 }

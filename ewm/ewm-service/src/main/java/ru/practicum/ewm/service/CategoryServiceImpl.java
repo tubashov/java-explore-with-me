@@ -1,6 +1,6 @@
 package ru.practicum.ewm.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.category.UpdateCategoryDto;
 import ru.practicum.ewm.dto.category.NewCategoryDto;
@@ -77,6 +78,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     // 12 Получение категорий
     @Override
+    @Transactional(readOnly = true)
     public List<CategoryDto> findAll(int from, int size) {
 
         Page<Category> page = categoryRepository.findAll(
@@ -92,6 +94,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     // 13 Получение информации о категории по её идентификатору
     @Override
+    @Transactional(readOnly = true)
     public CategoryDto findById(Long catId) {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> {
