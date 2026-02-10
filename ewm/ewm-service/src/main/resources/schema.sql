@@ -54,3 +54,10 @@ CREATE TABLE IF NOT EXISTS participation_requests (
     CONSTRAINT fk_request_event FOREIGN KEY (event_id) REFERENCES events(id),
     CONSTRAINT fk_request_user FOREIGN KEY (requester_id) REFERENCES users(id)
 );
+CREATE TABLE IF NOT EXISTS event_rating (
+    id SERIAL PRIMARY KEY,
+    event_id BIGINT NOT NULL REFERENCES event(id),
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    liked BOOLEAN NOT NULL,
+    UNIQUE (event_id, user_id)
+);

@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "Explore With Me - Rating Events Feature",
+    "_postman_id": "e9a2f8b0-5678-4abc-8def-987654321000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Single User Rating Update (like → dislike → like)",
+      "item": [
+        {
+          "name": "Пользователь 1 ставит лайк",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/events/1/rating?userId=1&liked=true"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Шаг 1: Пользователь 1 ставит лайк → eventId = ${eventId}, liked = ${res.liked}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ответ содержит eventId, userId, liked\", () => {",
+                  "  pm.expect(res).to.have.property('eventId');",
+                  "  pm.expect(res).to.have.property('userId');",
+                  "  pm.expect(res).to.have.property('liked');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Пользователь 1 ставит дизлайк",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/events/1/rating?userId=1&liked=false"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Шаг 2: Пользователь 1 ставит дизлайк → eventId = ${eventId}, liked = ${res.liked}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ответ содержит eventId, userId, liked\", () => {",
+                  "  pm.expect(res).to.have.property('eventId');",
+                  "  pm.expect(res).to.have.property('userId');",
+                  "  pm.expect(res).to.have.property('liked');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Пользователь 1 снова ставит лайк",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/events/1/rating?userId=1&liked=true"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Шаг 3: Пользователь 1 снова ставит лайк → eventId = ${eventId}, liked = ${res.liked}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ответ содержит eventId, userId, liked\", () => {",
+                  "  pm.expect(res).to.have.property('eventId');",
+                  "  pm.expect(res).to.have.property('userId');",
+                  "  pm.expect(res).to.have.property('liked');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Итоговый рейтинг после одного пользователя",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/events/1/rating"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Итоговый рейтинг после одного пользователя → eventId = ${eventId}, likes = ${res.likes}, dislikes = ${res.dislikes}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ответ содержит likes и dislikes\", () => {",
+                  "  pm.expect(res).to.have.property('likes');",
+                  "  pm.expect(res).to.have.property('dislikes');",
+                  "});",
+                  "pm.test(`Итоговый рейтинг события id = ${eventId} корректен`, () => {",
+                  "  pm.expect(res.likes).to.be.at.least(0);",
+                  "  pm.expect(res.dislikes).to.be.at.least(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Multiple Users Rating",
+      "item": [
+        {
+          "name": "Пользователь 2 ставит дизлайк",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/events/1/rating?userId=2&liked=false"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Пользователь 2 ставит дизлайк → eventId = ${eventId}, liked = ${res.liked}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Пользователь 3 ставит лайк",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/events/1/rating?userId=3&liked=true"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Пользователь 3 ставит лайк → eventId = ${eventId}, liked = ${res.liked}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Повторный лайк пользователя 3",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/events/1/rating?userId=3&liked=true"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Повторный лайк пользователя 3 → eventId = ${eventId}, liked = ${res.liked}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Итоговый рейтинг после нескольких пользователей",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/events/1/rating"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const eventId = pm.request.url.path[1];",
+                  "const res = pm.response.json();",
+                  "console.log(`Итоговый рейтинг после нескольких пользователей → eventId = ${eventId}, likes = ${res.likes}, dislikes = ${res.dislikes}`);",
+                  "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ответ содержит likes и dislikes\", () => {",
+                  "  pm.expect(res).to.have.property('likes');",
+                  "  pm.expect(res).to.have.property('dislikes');",
+                  "});",
+                  "pm.test(`Итоговый рейтинг события id = ${eventId} корректен`, () => {",
+                  "  pm.expect(res.likes).to.be.at.least(0);",
+                  "  pm.expect(res.dislikes).to.be.at.least(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Несуществующее событие",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/events/999/rating"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const eventId = pm.request.url.path[1];",
+              "const res = pm.response.json();",
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(`Событие с id = ${eventId} не существует`, () => {",
+              "  pm.expect(res.message).to.include(\"Event not found\");",
+              "});",
+              "console.log(`Попытка получить рейтинг несуществующего события id = ${eventId}: ${res.message}`);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

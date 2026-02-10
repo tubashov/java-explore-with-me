@@ -30,7 +30,6 @@ public class StatsClient {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // Отправка события о посещении на сервер статистики
-    // Отправка события о посещении на сервер статистики
     public void saveHit(EndpointHitDto hit) {
         log.info("Sending hit to stats server: {}", hit);
         try {
