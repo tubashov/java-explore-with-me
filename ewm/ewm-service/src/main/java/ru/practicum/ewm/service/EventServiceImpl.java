@@ -407,7 +407,6 @@ public class EventServiceImpl implements EventService {
     }
 
     // 17 Получение подробной информации об опубликованном событии по его идентификатору
-    // В EventServiceImpl
     @Override
     @Transactional(readOnly = true)
     public EventFullDto findPublicById(Long eventId, HttpServletRequest request) {
